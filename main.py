@@ -7,6 +7,7 @@ import pytesseract
 from PIL import Image
 import io
 import requests
+import os
 
 class OCRApp(App):
     def build(self):
