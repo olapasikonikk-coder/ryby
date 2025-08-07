@@ -22,7 +22,7 @@ jobs:
       with:
         python-version: '3.8'
 
-    # Krok 3: Zainstaluj zależności systemowe
+    # Krok 3: Zainstaluj zależności systemowe (POPRAWIONA WERSJA)
     - name: Install system dependencies
       run: |
         sudo apt-get update
@@ -38,7 +38,7 @@ jobs:
           zlib1g-dev \
           libncurses5-dev \
           libncursesw5-dev \
-          libtinfo5 \
+          libtinfo6 \
           cmake \
           libltdl-dev \
           libsqlite3-dev \
@@ -86,7 +86,7 @@ jobs:
         ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         BUILDOZER_WARN_ON_ROOT: 1
 
-    # Krok 9: Zapisz artefakty (POPRAWIONA WERSJA)
+    # Krok 9: Zapisz artefakty
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
