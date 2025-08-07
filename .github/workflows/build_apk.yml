@@ -55,14 +55,15 @@ jobs:
         pip install cython==0.29.36
         pip install buildozer==1.5.0
 
-    # Krok 5: Zainstaluj Android SDK i NDK (ZAKTUALIZOWANO)
+    # Krok 5: Zainstaluj Android SDK i NDK
     - name: Install Android SDK
       uses: android-actions/setup-android@v2
 
     - name: Install Android NDK
+      id: setup-ndk
       uses: nttld/setup-ndk@v1
       with:
-        ndk-version: r25b  # ZAKTUALIZOWANO do wersji 25b
+        ndk-version: r25b
         add-to-path: true
 
     # Krok 6: Akceptuj licencje Android SDK
@@ -70,33 +71,48 @@ jobs:
       run: |
         yes | sdkmanager --licenses || true
 
-    # Krok 7: Konfiguruj środowisko Buildozer
+    # Krok 7: Wyświetl informacje o NDK (do debugowania)
+    - name: Display NDK info
+      run: |
+        echo "NDK path: ${{ steps.setup-ndk.outputs.ndk-path }}"
+        ls -la ${{ steps.setup-ndk.outputs.ndk-path }}
+
+    # Krok 8: Konfiguruj środowisko Buildozer
     - name: Configure Buildozer
       run: |
         mkdir -p ~/.buildozer
         echo "[buildozer]" > ~/.buildozer/buildozer.spec
         echo "log_level = 2" >> ~/.buildozer/buildozer.spec
 
-    # Krok 8: Kompiluj APK
+    # Krok 9: Kompiluj APK z pełnym logowaniem
     - name: Build APK
       run: |
-        buildozer android debug
+        buildozer android debug 2>&1 | tee buildozer.log
       env:
-        ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_ROOT }}
+        ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
         ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         BUILDOZER_WARN_ON_ROOT: 1
 
-    # Krok 9: Zapisz artefakty
+    # Krok 10: Zapisz artefakty
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: bin/*.apk
 
-    # Krok 10: Zapisz logi Buildozer (do debugowania)
+    # Krok 11: Zapisz logi Buildozer (do debugowania)
     - name: Upload Buildozer logs
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: buildozer-logs
         path: .buildozer/logs/
+
+    # Krok 12: Zapisz pełny log kompilacji
+    - name: Upload build log
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: build-log
+        path: buildozer.log
