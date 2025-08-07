@@ -40,7 +40,7 @@ android.accept_sdk_license = True
 android.archs = arm64-v8a
 
 # (int) Android NDK version to use
-android.ndk = 25b
+android.ndk = 23b
 
 # (int) Android API to use
 android.api = 30
@@ -49,7 +49,7 @@ android.api = 30
 android.minapi = 21
 
 # (str) p4a branch to use
-p4a.branch = develop
+p4a.branch = stable
 
 [buildozer]
 
