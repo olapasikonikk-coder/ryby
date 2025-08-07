@@ -18,8 +18,8 @@ source.include_exts = py,png,jpg,kv,atlas,ttf
 # (str) Application versioning
 version = 0.1
 
-# (list) Application requirements
-requirements = python3,kivy==2.1.0,pytesseract==0.3.10,Pillow==9.5.0,requests==2.28.1
+# (list) Application requirements - ZAKTUALIZOWANO WERSJE PAKIETÓW
+requirements = python3,kivy==2.1.0,pytesseract==0.3.10,Pillow==10.0.0,requests==2.28.1
 
 # (list) Icon files
 icon.filename = assets/icon.png
@@ -39,7 +39,7 @@ android.accept_sdk_license = True
 # (str) The Android arch to build for
 android.arch = arm64-v8a
 
-# (int) Android NDK version to use - używamy najnowszej stabilnej wersji
+# (int) Android NDK version to use
 android.ndk = 25b
 
 # (int) Android API to use
@@ -47,6 +47,12 @@ android.api = 30
 
 # (int) Minimum Android API
 android.minapi = 21
+
+# (str) p4a branch to use
+p4a.branch = develop
+
+# (str) Opcje dla python-for-android
+p4a.local_recipes =
 
 [buildozer]
 
