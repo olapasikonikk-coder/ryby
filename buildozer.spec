@@ -39,8 +39,8 @@ android.accept_sdk_license = True
 # (str) The Android arch to build for
 android.arch = arm64-v8a
 
-# (int) Android NDK version to use
-android.ndk = 23b
+# (int) Android NDK version to use (ZAKTUALIZOWANO)
+android.ndk = 25b
 
 # (int) Android API to use
 android.api = 30
