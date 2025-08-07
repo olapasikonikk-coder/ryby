@@ -47,14 +47,7 @@ jobs:
           unzip \
           openjdk-17-jdk \
           python3-pip \
-          patchelf \
-          libjpeg-dev \
-          libfreetype6-dev \
-          liblcms2-dev \
-          libwebp-dev \
-          tcl8.6-dev \
-          tk8.6-dev \
-          python3-tk
+          patchelf
 
     # Krok 4: Zainstaluj zależności Python
     - name: Install Python dependencies
@@ -89,19 +82,29 @@ jobs:
         echo "NDK version: ${{ steps.setup-ndk.outputs.ndk-version }}"
         echo "JAVA_HOME: $JAVA_HOME"
 
-    # Krok 8: Konfiguruj środowisko Buildozer
+    # Krok 8: Ręcznie zainicjuj środowisko Buildozer
+    - name: Initialize Buildozer environment
+      run: |
+        # Tworzenie niezbędnych katalogów
+        mkdir -p .buildozer/android/platform
+        # Ręczne klonowanie python-for-android
+        git clone https://github.com/kivy/python-for-android .buildozer/android/platform/python-for-android --branch develop --depth 1
+        # Inicjalizacja Buildozer
+        buildozer init
+
+    # Krok 9: Konfiguruj środowisko Buildozer
     - name: Configure Buildozer
       run: |
         mkdir -p ~/.buildozer
         echo "[buildozer]" > ~/.buildozer/buildozer.spec
         echo "log_level = 2" >> ~/.buildozer/buildozer.spec
 
-    # Krok 9: Wyczyść poprzednie kompilacje
+    # Krok 10: Wyczyść poprzednie kompilacje
     - name: Clean previous builds
       run: |
         buildozer android clean
 
-    # Krok 10: Kompiluj APK z pełnym logowaniem
+    # Krok 11: Kompiluj APK z pełnym logowaniem
     - name: Build APK
       run: |
         buildozer android debug 2>&1 | tee buildozer.log
@@ -111,14 +114,14 @@ jobs:
         ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         BUILDOZER_WARN_ON_ROOT: 1
 
-    # Krok 11: Zapisz artefakty
+    # Krok 12: Zapisz artefakty
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: bin/*.apk
 
-    # Krok 12: Zapisz logi Buildozer
+    # Krok 13: Zapisz logi Buildozer
     - name: Upload Buildozer logs
       uses: actions/upload-artifact@v4
       if: always()
@@ -126,7 +129,7 @@ jobs:
         name: buildozer-logs
         path: .buildozer/logs/
 
-    # Krok 13: Zapisz pełny log kompilacji
+    # Krok 14: Zapisz pełny log kompilacji
     - name: Upload build log
       uses: actions/upload-artifact@v4
       if: always()
