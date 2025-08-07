@@ -10,134 +10,75 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    container:
+      image: kivy/buildozer:latest
 
     steps:
     # Krok 1: Pobierz kod repozytorium
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Krok 2: Ustaw Python 3.10
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    # Krok 3: Zainstaluj zależności systemowe
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          libffi-dev \
-          libssl-dev \
-          autoconf \
-          autotools-dev \
-          automake \
-          libtool \
-          pkg-config \
-          zlib1g-dev \
-          libncurses5-dev \
-          libncursesw5-dev \
-          libtinfo6 \
-          cmake \
-          libltdl-dev \
-          libsqlite3-dev \
-          git \
-          zip \
-          unzip \
-          openjdk-17-jdk \
-          python3-pip \
-          patchelf
-
-    # Krok 4: Zainstaluj zależności Python
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install cython==3.0.2
-        pip install buildozer==1.5.0
-
-    # Krok 5: Zainstaluj Android SDK i NDK
-    - name: Install Android SDK
-      uses: android-actions/setup-android@v2
-
-    - name: Install Android NDK
-      id: setup-ndk
-      uses: nttld/setup-ndk@v1
-      with:
-        ndk-version: r25b
-        add-to-path: true
-
-    # Krok 6: Akceptuj licencje Android SDK
-    - name: Accept Android SDK licenses
-      run: |
-        yes | sdkmanager --licenses || true
-
-    # Krok 7: Wyświetl informacje o środowisku
+    # Krok 2: Wyświetl informacje o środowisku
     - name: Display environment info
       run: |
         echo "Python version: $(python --version)"
         echo "Pip version: $(pip --version)"
         echo "Buildozer version: $(buildozer --version)"
-        echo "NDK path: ${{ steps.setup-ndk.outputs.ndk-path }}"
-        echo "NDK version: ${{ steps.setup-ndk.outputs.ndk-version }}"
-        echo "JAVA_HOME: $JAVA_HOME"
+        echo "NDK path: $ANDROID_NDK_HOME"
+        echo "SDK path: $ANDROID_SDK_ROOT"
 
-    # Krok 8: Przygotuj środowisko Buildozer (CAŁKOWICIE NOWE PODEJŚCIE)
-    - name: Prepare Buildozer environment
+    # Krok 3: Zainstaluj dodatkowe zależności
+    - name: Install additional dependencies
       run: |
-        # Konfiguracja Buildozer
-        mkdir -p ~/.buildozer
-        echo "[buildozer]" > ~/.buildozer/buildozer.spec
-        echo "log_level = 2" >> ~/.buildozer/buildozer.spec
-        
-        # Tworzenie niezbędnych katalogów
-        mkdir -p .buildozer/android/platform
-        
-        # Usuń istniejący katalog python-for-android jeśli istnieje
-        if [ -d ".buildozer/android/platform/python-for-android" ]; then
-          echo "Removing existing python-for-android directory"
-          rm -rf .buildozer/android/platform/python-for-android
-        fi
-        
-        # Inicjalizacja Buildozer bez tworzenia pliku spec
-        buildozer --version
-        
-        # Sprawdź czy buildozer.spec istnieje
-        if [ -f "buildozer.spec" ]; then
-          echo "buildozer.spec already exists"
-        else
-          echo "buildozer.spec does not exist"
-        fi
+        pip install cython==3.0.2
 
-    # Krok 9: Kompiluj APK z pełnym logowaniem (USUNIĘTO KROK CZYSZCZENIA)
+    # Krok 4: Kompiluj APK z pełnym logowaniem
     - name: Build APK
       run: |
         buildozer android debug 2>&1 | tee buildozer.log
       env:
-        ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-        ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
-        ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
-        BUILDOZER_WARN_ON_ROOT: 1
+        ANDROID_NDK_HOME: $ANDROID_NDK_HOME
+        ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT
 
-    # Krok 10: Zapisz artefakty
+    # Krok 5: Sprawdź zawartość katalogów
+    - name: Check directories
+      if: always()
+      run: |
+        echo "=== Listing .buildozer directory ==="
+        find .buildozer -type f | head -20
+        echo "=== Listing bin directory ==="
+        find bin -type f 2>/dev/null || echo "bin directory does not exist"
+        echo "=== Looking for APK files ==="
+        find . -name "*.apk" 2>/dev/null || echo "No APK files found"
+
+    # Krok 6: Zapisz artefakty
     - name: Upload APK
       uses: actions/upload-artifact@v4
+      if: always()
+      continue-on-error: true
       with:
         name: app-debug
-        path: bin/*.apk
+        path: |
+          bin/*.apk
+          ./*.apk
 
-    # Krok 11: Zapisz logi Buildozer
+    # Krok 7: Zapisz logi Buildozer
     - name: Upload Buildozer logs
       uses: actions/upload-artifact@v4
       if: always()
+      continue-on-error: true
       with:
         name: buildozer-logs
-        path: .buildozer/logs/
+        path: |
+          .buildozer/logs/
+          buildozer.log
+          .buildozer/buildozer.log
 
-    # Krok 12: Zapisz pełny log kompilacji
+    # Krok 8: Zapisz pełny log kompilacji
     - name: Upload build log
       uses: actions/upload-artifact@v4
       if: always()
+      continue-on-error: true
       with:
         name: build-log
         path: buildozer.log
