@@ -86,16 +86,16 @@ jobs:
         ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         BUILDOZER_WARN_ON_ROOT: 1
 
-    # Krok 9: Zapisz artefakty
+    # Krok 9: Zapisz artefakty (POPRAWIONA WERSJA)
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: bin/*.apk
 
     # Krok 10: Zapisz logi Buildozer (do debugowania)
     - name: Upload Buildozer logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: buildozer-logs
