@@ -36,7 +36,7 @@ android.permissions = INTERNET
 # (bool) If True, then automatically accept SDK license agreements
 android.accept_sdk_license = True
 
-# (list) Android architectures to build for (nowa składnia)
+# (list) Android architectures to build for
 android.archs = arm64-v8a
 
 # (int) Android NDK version to use
