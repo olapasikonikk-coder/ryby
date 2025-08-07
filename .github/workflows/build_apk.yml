@@ -22,7 +22,7 @@ jobs:
       with:
         python-version: '3.8'
 
-    # Krok 3: Zainstaluj zależności systemowe (POPRAWIONA WERSJA)
+    # Krok 3: Zainstaluj zależności systemowe
     - name: Install system dependencies
       run: |
         sudo apt-get update
@@ -55,14 +55,14 @@ jobs:
         pip install cython==0.29.36
         pip install buildozer==1.5.0
 
-    # Krok 5: Zainstaluj Android SDK i NDK
+    # Krok 5: Zainstaluj Android SDK i NDK (ZAKTUALIZOWANO)
     - name: Install Android SDK
       uses: android-actions/setup-android@v2
 
     - name: Install Android NDK
       uses: nttld/setup-ndk@v1
       with:
-        ndk-version: r23b
+        ndk-version: r25b  # ZAKTUALIZOWANO do wersji 25b
         add-to-path: true
 
     # Krok 6: Akceptuj licencje Android SDK
