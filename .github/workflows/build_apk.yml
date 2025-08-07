@@ -16,11 +16,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Krok 2: Ustaw Python 3.8
+    # Krok 2: Ustaw Python 3.10
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.10'
 
     # Krok 3: Zainstaluj zależności systemowe
     - name: Install system dependencies
@@ -45,14 +45,22 @@ jobs:
           git \
           zip \
           unzip \
-          openjdk-8-jdk \
-          python3-pip
+          openjdk-17-jdk \
+          python3-pip \
+          patchelf \
+          libjpeg-dev \
+          libfreetype6-dev \
+          liblcms2-dev \
+          libwebp-dev \
+          tcl8.6-dev \
+          tk8.6-dev \
+          python3-tk
 
     # Krok 4: Zainstaluj zależności Python
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install cython==0.29.36
+        pip install cython==3.0.2
         pip install buildozer==1.5.0
 
     # Krok 5: Zainstaluj Android SDK i NDK
@@ -71,11 +79,15 @@ jobs:
       run: |
         yes | sdkmanager --licenses || true
 
-    # Krok 7: Wyświetl informacje o NDK (do debugowania)
-    - name: Display NDK info
+    # Krok 7: Wyświetl informacje o środowisku
+    - name: Display environment info
       run: |
+        echo "Python version: $(python --version)"
+        echo "Pip version: $(pip --version)"
+        echo "Buildozer version: $(buildozer --version)"
         echo "NDK path: ${{ steps.setup-ndk.outputs.ndk-path }}"
-        ls -la ${{ steps.setup-ndk.outputs.ndk-path }}
+        echo "NDK version: ${{ steps.setup-ndk.outputs.ndk-version }}"
+        echo "JAVA_HOME: $JAVA_HOME"
 
     # Krok 8: Konfiguruj środowisko Buildozer
     - name: Configure Buildozer
@@ -84,7 +96,12 @@ jobs:
         echo "[buildozer]" > ~/.buildozer/buildozer.spec
         echo "log_level = 2" >> ~/.buildozer/buildozer.spec
 
-    # Krok 9: Kompiluj APK z pełnym logowaniem
+    # Krok 9: Wyczyść poprzednie kompilacje
+    - name: Clean previous builds
+      run: |
+        buildozer android clean
+
+    # Krok 10: Kompiluj APK z pełnym logowaniem
     - name: Build APK
       run: |
         buildozer android debug 2>&1 | tee buildozer.log
@@ -94,14 +111,14 @@ jobs:
         ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         BUILDOZER_WARN_ON_ROOT: 1
 
-    # Krok 10: Zapisz artefakty
+    # Krok 11: Zapisz artefakty
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: bin/*.apk
 
-    # Krok 11: Zapisz logi Buildozer (do debugowania)
+    # Krok 12: Zapisz logi Buildozer
     - name: Upload Buildozer logs
       uses: actions/upload-artifact@v4
       if: always()
@@ -109,7 +126,7 @@ jobs:
         name: buildozer-logs
         path: .buildozer/logs/
 
-    # Krok 12: Zapisz pełny log kompilacji
+    # Krok 13: Zapisz pełny log kompilacji
     - name: Upload build log
       uses: actions/upload-artifact@v4
       if: always()
