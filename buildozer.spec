@@ -39,11 +39,14 @@ android.accept_sdk_license = True
 # (str) The Android arch to build for
 android.arch = arm64-v8a
 
-# (int) Android NDK version to use (ZAKTUALIZOWANO)
+# (int) Android NDK version to use - używamy najnowszej stabilnej wersji
 android.ndk = 25b
 
 # (int) Android API to use
 android.api = 30
+
+# (int) Minimum Android API
+android.minapi = 21
 
 [buildozer]
 
